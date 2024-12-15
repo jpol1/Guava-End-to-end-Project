@@ -1,0 +1,42 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: Run Tests and Code Formatting Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Format Code with Black
+        run: |
+          black .
+          isort .
+
+      - name: Run Unit Tests
+        run: |
+          pytest tests/ --maxfail=1 --disable-warnings
+
+      - name: Tests Passed
+        if: success()
+        run: echo "✅ All tests and checks passed successfully!"
+
+      - name: Tests or Checks Failed
+        if: failure()
+        run: echo "❌ Tests or formatting checks failed. Fix issues before merging."
